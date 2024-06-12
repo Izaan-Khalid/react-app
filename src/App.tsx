@@ -1,18 +1,24 @@
 import { useState } from "react";
+import ListGroup from "./components/ListGroup";
 import Button from "./components/Button";
-import Alert from "./components/Alert";
+import "./App.css";
 
 function App() {
   const [buttonClick, setButtonClick] = useState(false);
+  let items = ["New York", "Los Angeles", "San Fransico"];
+
+  const handleSelectItem = (item: string) => {
+    console.log(item);
+  };
 
   return (
     <div>
-      {buttonClick && (
-        <Alert onDismiss={() => setButtonClick(false)}> My Alert </Alert>
-      )}
-      <Button color="danger" onClick={() => setButtonClick(true)}>
-        My Button
-      </Button>
+      {/* <ListGroup
+        items={items}
+        heading="Miami"
+        onSelectItem={handleSelectItem}
+      /> */}
+      <Button onClick={() => console.log("Thank you!")}>press me!</Button>
     </div>
   );
 }

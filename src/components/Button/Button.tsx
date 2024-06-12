@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import styles from "./Button.module.css";
 
 interface ButtonProp {
   children: string;
@@ -8,7 +8,11 @@ interface ButtonProp {
 
 const Button = ({ children, onClick, color = "primary" }: ButtonProp) => {
   return (
-    <button type="button" className={`btn btn-${color}`} onClick={onClick}>
+    <button
+      className={[styles.btn, styles["btn-" + color]].join(" ")}
+      type="button"
+      onClick={onClick}
+    >
       {children}
     </button>
   );
