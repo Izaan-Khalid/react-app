@@ -1,44 +1,79 @@
-import { useState } from "react";
-import ExpenseList from "./components/ExpenseTracker/ExpenseList";
-import ExpenseDropdown from "./components/ExpenseTracker/ExpenseDropdown";
-import ExpenseForm from "./components/ExpenseTracker/ExpenseForm";
-import categories from "./components/ExpenseTracker/categories";
+import { useEffect, useState } from "react";
+import { CanceledError } from "./services/api-client";
+import userService, { User } from "./services/user-service";
+import useUsers from "./hooks/useUsers";
 
 function App() {
-	const [selectedCategory, setSelectedCategory] = useState("");
-	const [items, setItems] = useState([
-		{ id: 1, name: "aaa", price: 10, category: "Utilities" },
-		{ id: 2, name: "aaa", price: 10, category: "Entertainment" },
-		{ id: 3, name: "aaa", price: 10, category: "Utilities" },
-		{ id: 4, name: "aaa", price: 10, category: "Utilities" },
-	]);
+	const { users, err, isLoading, setUsers, setErr } = useUsers();
 
-	const visibleItems = selectedCategory
-		? items.filter((e) => e.category === selectedCategory)
-		: items;
+	const deleteUser = (user: User) => {
+		const originalUsers = [...users];
+		setUsers(users.filter((u) => u.id !== user.id));
+
+		userService.delete(user.id).catch((err) => {
+			setErr(err.message);
+			setUsers(originalUsers);
+		});
+	};
+
+	const addUser = () => {
+		const originalUsers = [...users];
+		const newUser = { id: 0, name: "Mosh" };
+		setUsers([newUser, ...users]);
+
+		userService
+			.create(newUser)
+			.then(({ data: savedUser }) => setUsers([savedUser, ...users]))
+			.catch((err) => {
+				setErr(err.message);
+				setUsers(originalUsers);
+			});
+	};
+
+	const updateUser = (user: User) => {
+		const originalUsers = [...users];
+
+		const updatedUser = { ...user, name: user.name + "!" };
+		setUsers(users.map((u) => (u.id === user.id ? updatedUser : u)));
+
+		userService.update(updatedUser).catch((err) => {
+			setErr(err.message);
+			setUsers(originalUsers);
+		});
+	};
 
 	return (
-		<div>
-			<div className="mb-5">
-				<ExpenseForm
-					onSubmit={(item) =>
-						setItems([...items, { ...item, id: items.length + 1 }])
-					}
-				/>
-			</div>
-			<div className="mb-3">
-				<ExpenseDropdown
-					onSelectCategory={(category) =>
-						setSelectedCategory(category)
-					}
-				/>
-			</div>
-
-			<ExpenseList
-				items={visibleItems}
-				onDelete={(id) => setItems(items.filter((e) => e.id !== id))}
-			/>
-		</div>
+		<>
+			{err && <p className="text-danger">{err}</p>}
+			{isLoading && <div className="spinner-border"></div>}
+			<button className="btn btn-primary mb-3" onClick={addUser}>
+				Add
+			</button>
+			<ul className="list-group">
+				{users.map((user) => (
+					<li
+						key={user.id}
+						className="list-group-item d-flex justify-content-between"
+					>
+						{user.name}
+						<div>
+							<button
+								className="btn btn-outline-secondary mx-1"
+								onClick={() => updateUser(user)}
+							>
+								Update
+							</button>
+							<button
+								className="btn btn-outline-danger"
+								onClick={() => deleteUser(user)}
+							>
+								Delete
+							</button>
+						</div>
+					</li>
+				))}
+			</ul>
+		</>
 	);
 }
 
